@@ -195,18 +195,18 @@
         An interactive citation graph explorer that helps researchers navigate unfamiliar academic fields.
       </p>
       <div class="downloads">
-        <a class="btn btn-primary" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
+        <a id="dl-mac" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
           macOS (.dmg)
         </a>
-        <a class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
+        <a id="dl-win" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
           Windows (.exe)
         </a>
-        <a class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
+        <a id="dl-linux" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
           Linux (.AppImage)
         </a>
       </div>
-      <p class="version-note">
-        Latest: <strong>v0.5.2</strong> &middot; Free &amp; open source &middot;
+      <p class="version-note" id="version-note">
+        Free &amp; open source &middot;
         <a href="https://github.com/MichaelAJH/field-atlas-releases/releases">All releases</a>
       </p>
     </header>
@@ -321,6 +321,58 @@
     </footer>
 
   </div>
+
+  <script>
+    (function () {
+      var REPO = 'MichaelAJH/field-atlas-releases';
+      var API  = 'https://api.github.com/repos/' + REPO + '/releases/latest';
+
+      // Map file extensions to button IDs
+      var EXT_MAP = { '.dmg': 'dl-mac', '.exe': 'dl-win', '.AppImage': 'dl-linux' };
+
+      // Detect user OS and highlight matching button
+      var ua = navigator.userAgent || navigator.platform || '';
+      var detectedId = /Mac/i.test(ua) ? 'dl-mac'
+                     : /Win/i.test(ua) ? 'dl-win'
+                     : /Linux/i.test(ua) ? 'dl-linux'
+                     : 'dl-mac';
+      var el = document.getElementById(detectedId);
+      if (el) el.classList.add('btn-primary');
+
+      function formatSize(bytes) {
+        if (bytes >= 1e9) return (bytes / 1e9).toFixed(1) + ' GB';
+        if (bytes >= 1e6) return (bytes / 1e6).toFixed(0) + ' MB';
+        return bytes + ' B';
+      }
+
+      fetch(API)
+        .then(function (r) { return r.json(); })
+        .then(function (release) {
+          // Update version note
+          var note = document.getElementById('version-note');
+          if (note && release.tag_name) {
+            note.innerHTML = 'Latest: <strong>' + release.tag_name + '</strong> &middot; Free &amp; open source &middot; '
+              + '<a href="https://github.com/' + REPO + '/releases">All releases</a>';
+          }
+
+          // Update each download button with direct asset URL and size
+          (release.assets || []).forEach(function (asset) {
+            var name = asset.name || '';
+            Object.keys(EXT_MAP).forEach(function (ext) {
+              if (name.endsWith(ext)) {
+                var btn = document.getElementById(EXT_MAP[ext]);
+                if (btn) {
+                  btn.href = asset.browser_download_url;
+                  var label = ext === '.dmg' ? 'macOS' : ext === '.exe' ? 'Windows' : 'Linux';
+                  btn.textContent = label + ' (' + ext.slice(1) + ') \u2014 ' + formatSize(asset.size);
+                }
+              }
+            });
+          });
+        })
+        .catch(function () { /* fallback: buttons still link to /releases/latest */ });
+    })();
+  </script>
 
 </body>
 </html>
