@@ -134,7 +134,7 @@ chmod +x Field\ Atlas-*.AppImage
 
 ## Still stuck?
 
-If none of the above helps, [open an issue](https://github.com/yourusername/field-atlas-releases/issues) with:
+If none of the above helps, [open an issue](https://github.com/MichaelAJH/field-atlas-releases/issues) with:
 - Your Field Atlas version
 - Your operating system
 - The LLM provider you're using

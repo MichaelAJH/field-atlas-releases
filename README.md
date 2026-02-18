@@ -10,11 +10,11 @@ Get the latest release for your platform:
 
 | Platform | Format | Link |
 |----------|--------|------|
-| macOS    | `.dmg` | [Download](https://github.com/yourusername/field-atlas-releases/releases/latest) |
-| Windows  | `.exe` | [Download](https://github.com/yourusername/field-atlas-releases/releases/latest) |
-| Linux    | `.AppImage` | [Download](https://github.com/yourusername/field-atlas-releases/releases/latest) |
+| macOS    | `.dmg` | [Download](https://github.com/MichaelAJH/field-atlas-releases/releases/latest) |
+| Windows  | `.exe` | [Download](https://github.com/MichaelAJH/field-atlas-releases/releases/latest) |
+| Linux    | `.AppImage` | [Download](https://github.com/MichaelAJH/field-atlas-releases/releases/latest) |
 
-See all versions on the [Releases page](https://github.com/yourusername/field-atlas-releases/releases).
+See all versions on the [Releases page](https://github.com/MichaelAJH/field-atlas-releases/releases).
 
 ## Installation
 
@@ -60,4 +60,4 @@ Ollama is optional if you have a **Claude** (Anthropic) or **OpenAI** API key. C
 
 ## Reporting Issues
 
-Found a bug or have a feature request? Open an issue on the [issue tracker](https://github.com/yourusername/field-atlas-releases/issues).
+Found a bug or have a feature request? Open an issue on the [issue tracker](https://github.com/MichaelAJH/field-atlas-releases/issues).
