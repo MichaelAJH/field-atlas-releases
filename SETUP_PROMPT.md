@@ -53,9 +53,9 @@ field-atlas-releases/
 │       └── bug_report.md
 └── releases/                          # Build artifacts, per-version
     └── v0.5.2/                        # Example version directory
-        ├── Field Atlas-0.5.2.dmg      # macOS
-        ├── Field Atlas Setup 0.5.2.exe # Windows
-        └── Field Atlas-0.5.2.AppImage # Linux
+        ├── Field_Atlas-0.5.2.dmg      # macOS
+        ├── Field_Atlas-0.5.2.exe      # Windows
+        └── Field_Atlas-0.5.2.AppImage # Linux
 ```
 
 Artifacts in `releases/` are large binaries. They should be distributed via **GitHub Releases** (uploaded as release assets), not committed to git. The `releases/` directory is gitignored and exists only as a local staging area.
@@ -79,7 +79,7 @@ When cutting a new release from the dev repo:
    ├── Update download links in index.html (point to GitHub Release assets)
    ├── git add . && git commit -m "Release vX.Y.Z"
    ├── git tag vX.Y.Z
-   └── gh release create vX.Y.Z releases/vX.Y.Z/* --title "vX.Y.Z" --notes-file <notes>
+   └── gh release create vX.Y.Z Field_Atlas-X.Y.Z.dmg Field_Atlas-X.Y.Z.exe Field_Atlas-X.Y.Z.AppImage --title "vX.Y.Z" --notes-file <notes>
        (uploads artifacts as GitHub Release assets, then they can be deleted locally)
 ```
 
@@ -194,6 +194,6 @@ This creates a **fresh, independent** git history with no relation to the dev re
 - Docs should be friendly and assumption-light — users may be non-technical researchers.
 - The packaged app bundles everything (Python backend + Electron frontend) — users do NOT need Python or Node.js installed. Only Ollama is an external prerequisite (and even that is optional if using Claude/OpenAI).
 - Build artifacts from electron-builder follow this naming convention:
-  - macOS: `Field Atlas-{version}.dmg`
-  - Windows: `Field Atlas Setup {version}.exe`
-  - Linux: `Field Atlas-{version}.AppImage`
+  - macOS: `Field_Atlas-{version}.dmg`
+  - Windows: `Field_Atlas-{version}.exe`
+  - Linux: `Field_Atlas-{version}.AppImage`
