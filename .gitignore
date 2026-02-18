@@ -1,0 +1,11 @@
+# Release artifacts (distributed via GitHub Releases, not committed)
+releases/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
