@@ -147,20 +147,107 @@
     .step h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
     .step p { font-size: 0.85rem; color: var(--text-muted); }
 
-    /* ---- Features ---- */
+    /* ---- Features (card-flip) ---- */
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 16px;
+      /* Extra top padding so the floating title has room to slide above */
+      padding-top: 40px;
     }
-    .feature {
+
+    /* Outer wrapper — holds the floating title + the flip card */
+    .feature-wrap {
+      position: relative;
+      perspective: 800px;
+    }
+
+    /* Floating title: starts hidden above the card, slides up on hover */
+    .feature-title {
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 100%;
+      padding: 5px 14px 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #a5b4fc;
+      text-align: center;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+      /* Subtle shadow so the title is legible over any background */
+      text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+    }
+    .feature-wrap:hover .feature-title {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+
+    /* The 3D flip container — preserves card dimensions */
+    .feature-card {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      transition: transform 0.5s ease, box-shadow 0.4s ease;
+      transform-style: preserve-3d;
+      border-radius: var(--radius);
+      cursor: default;
+    }
+    .feature-wrap:hover .feature-card {
+      transform: rotateY(180deg) scale(1.06);
+      box-shadow: 0 0 20px 4px rgba(129, 140, 248, 0.35),
+                  0 0 60px 8px rgba(99, 102, 241, 0.12);
+    }
+
+    /* Shared face styles */
+    .feature-front,
+    .feature-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* Front face — the text card (default view) */
+    .feature-front {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .feature h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
-    .feature p { font-size: 0.85rem; color: var(--text-muted); }
+    .feature-front h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+    .feature-front p  { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Back face — full-bleed image/GIF */
+    .feature-back {
+      transform: rotateY(180deg);
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      background: var(--surface);
+    }
+    .feature-back img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Placeholder styling for images that haven't been added yet */
+    .feature-back .placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      background: linear-gradient(135deg, #1a1d27 0%, #222632 100%);
+    }
 
     /* ---- Requirements ---- */
     .req-grid {
@@ -274,30 +361,91 @@
     <section>
       <h2>Features</h2>
       <div class="features">
-        <div class="feature">
-          <h3>Smart Query Expansion</h3>
-          <p>Your query is expanded into multiple search variants to discover papers you'd otherwise miss.</p>
+
+        <div class="feature-wrap">
+          <span class="feature-title">Smart Query Expansion</span>
+          <div class="feature-card">
+            <div class="feature-front">
+              <h3>Smart Query Expansion</h3>
+              <p>Your query is expanded into multiple search variants to discover papers you'd otherwise miss.</p>
+            </div>
+            <div class="feature-back">
+              <!-- Replace with: <img src="assets/features/query-expansion.gif" alt="Smart Query Expansion"> -->
+              <div class="placeholder">Screenshot / GIF placeholder</div>
+            </div>
+          </div>
         </div>
-        <div class="feature">
-          <h3>Interactive Citation Graph</h3>
-          <p>Force-directed D3.js visualization with chronological layout. Zoom, pan, click to explore.</p>
+
+        <div class="feature-wrap">
+          <span class="feature-title">Interactive Citation Graph</span>
+          <div class="feature-card">
+            <div class="feature-front">
+              <h3>Interactive Citation Graph</h3>
+              <p>Force-directed D3.js visualization with chronological layout. Zoom, pan, click to explore.</p>
+            </div>
+            <div class="feature-back">
+              <!-- Replace with: <img src="assets/features/citation-graph.gif" alt="Interactive Citation Graph"> -->
+              <div class="placeholder">Screenshot / GIF placeholder</div>
+            </div>
+          </div>
         </div>
-        <div class="feature">
-          <h3>AI-Powered Summaries</h3>
-          <p>Hover any paper for an LLM-generated summary. Hover an edge to understand citation relationships.</p>
+
+        <div class="feature-wrap">
+          <span class="feature-title">AI-Powered Summaries</span>
+          <div class="feature-card">
+            <div class="feature-front">
+              <h3>AI-Powered Summaries</h3>
+              <p>Hover any paper for an LLM-generated summary. Hover an edge to understand citation relationships.</p>
+            </div>
+            <div class="feature-back">
+              <!-- Replace with: <img src="assets/features/summaries.gif" alt="AI-Powered Summaries"> -->
+              <div class="placeholder">Screenshot / GIF placeholder</div>
+            </div>
+          </div>
         </div>
-        <div class="feature">
-          <h3>Structural Analysis</h3>
-          <p>PageRank, centrality, clustering, and fundamental paper identification — computed automatically.</p>
+
+        <div class="feature-wrap">
+          <span class="feature-title">Structural Analysis</span>
+          <div class="feature-card">
+            <div class="feature-front">
+              <h3>Structural Analysis</h3>
+              <p>PageRank, centrality, clustering, and fundamental paper identification — computed automatically.</p>
+            </div>
+            <div class="feature-back">
+              <!-- Replace with: <img src="assets/features/structural.png" alt="Structural Analysis"> -->
+              <div class="placeholder">Screenshot / GIF placeholder</div>
+            </div>
+          </div>
         </div>
-        <div class="feature">
-          <h3>Adjustable Controls</h3>
-          <p>Toggle search variants, switch ranking presets (Overview / Balanced / Expert), or fine-tune with sliders.</p>
+
+        <div class="feature-wrap">
+          <span class="feature-title">Adjustable Controls</span>
+          <div class="feature-card">
+            <div class="feature-front">
+              <h3>Adjustable Controls</h3>
+              <p>Toggle search variants, switch ranking presets (Overview / Balanced / Expert), or fine-tune with sliders.</p>
+            </div>
+            <div class="feature-back">
+              <!-- Replace with: <img src="assets/features/controls.gif" alt="Adjustable Controls"> -->
+              <div class="placeholder">Screenshot / GIF placeholder</div>
+            </div>
+          </div>
         </div>
-        <div class="feature">
-          <h3>Export &amp; Load Sessions</h3>
-          <p>Save your entire exploration as JSON. Reload it later to pick up exactly where you left off.</p>
+
+        <div class="feature-wrap">
+          <span class="feature-title">Export &amp; Load Sessions</span>
+          <div class="feature-card">
+            <div class="feature-front">
+              <h3>Export &amp; Load Sessions</h3>
+              <p>Save your entire exploration as JSON. Reload it later to pick up exactly where you left off.</p>
+            </div>
+            <div class="feature-back">
+              <!-- Replace with: <img src="assets/features/export.gif" alt="Export & Load Sessions"> -->
+              <div class="placeholder">Screenshot / GIF placeholder</div>
+            </div>
+          </div>
         </div>
+
       </div>
     </section>
 
