@@ -1,5 +1,7 @@
 # Field Atlas
 
+![Field Atlas Banner](assets/banner.png)
+
 An interactive citation graph explorer that helps researchers navigate unfamiliar academic fields.
 
 Enter a research topic, and Field Atlas discovers ~50-70 relevant papers from Semantic Scholar, builds a citation graph, and provides AI-powered summaries — all in seconds.

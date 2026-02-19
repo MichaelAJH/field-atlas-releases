@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Field Atlas — Citation Graph Explorer for Researchers</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -40,6 +40,7 @@
       padding: 80px 0 48px;
       text-align: center;
       overflow: hidden;
+      width: 100%;
     }
     #graph-canvas {
       position: absolute;
@@ -48,9 +49,13 @@
       height: 100%;
       pointer-events: none;
     }
-    header > *:not(#graph-canvas) {
+    .hero-content {
       position: relative;
       z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+      pointer-events: auto;
     }
     header h1 {
       font-size: 2.8rem;
@@ -202,31 +207,33 @@
 </head>
 <body>
 
-  <div class="container">
-
-    <!-- Header -->
-    <header id="hero">
+  <!-- Header: full-width, outside .container -->
+  <header id="hero">
       <canvas id="graph-canvas"></canvas>
-      <h1>Field Atlas</h1>
-      <p class="tagline">
-        An interactive citation graph explorer that helps researchers navigate unfamiliar academic fields.
-      </p>
-      <div class="downloads">
-        <a id="dl-mac" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
-          macOS (.dmg)
-        </a>
-        <a id="dl-win" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
-          Windows (.exe)
-        </a>
-        <a id="dl-linux" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
-          Linux (.AppImage)
-        </a>
+      <div class="hero-content">
+        <h1>Field Atlas</h1>
+        <p class="tagline">
+          An interactive citation graph explorer that helps researchers navigate unfamiliar academic fields.
+        </p>
+        <div class="downloads">
+          <a id="dl-mac" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
+            macOS (.dmg)
+          </a>
+          <a id="dl-win" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
+            Windows (.exe)
+          </a>
+          <a id="dl-linux" class="btn" href="https://github.com/MichaelAJH/field-atlas-releases/releases/latest">
+            Linux (.AppImage)
+          </a>
+        </div>
+        <p class="version-note" id="version-note">
+          Free &amp; open source &middot;
+          <a href="https://github.com/MichaelAJH/field-atlas-releases/releases">All releases</a>
+        </p>
       </div>
-      <p class="version-note" id="version-note">
-        Free &amp; open source &middot;
-        <a href="https://github.com/MichaelAJH/field-atlas-releases/releases">All releases</a>
-      </p>
-    </header>
+  </header>
+
+  <div class="container">
 
     <!-- Quick Start -->
     <section>
@@ -346,28 +353,71 @@
       var hero   = document.getElementById('hero');
       var ctx    = canvas.getContext('2d');
       var mouse  = { x: -9999, y: -9999 };
-      var NODE_COUNT = 52;
-      var LINK_DIST  = 130;
-      var REPEL_DIST = 90;
-      var REPEL_STR  = 0.4;
+
+      // ── Physics constants — tune these to adjust feel ──────────────────
+      //
+      // NODE_COUNT: total number of nodes in the graph.
+      //   more → denser, more tangled   |   fewer → sparse, constellation-like
+      var NODE_COUNT = 65;
+
+      // LINK_DIST: max pixel distance at which two nodes are connected by an edge.
+      //   higher → more edges, tangly web   |   lower → fewer edges, sparse stars
+      var LINK_DIST  = 140;
+
+      // REPEL_DIST: radius (px) around the mouse cursor that pushes nodes away.
+      //   higher → larger influence zone   |   lower → tighter, more precise
+      var REPEL_DIST = 110;
+
+      // REPEL_STR: impulse strength applied when mouse enters REPEL_DIST.
+      //   higher → nodes scatter explosively   |   lower → gentle nudge
+      var REPEL_STR  = 0.9;
+
+      // SPRING_K: how strongly each node is pulled back toward its home position.
+      //   0.000 → pure drift, no recovery (original constellation feel)
+      //   0.005 → gentle pull, nodes wander but slowly drift home  ← current
+      //   0.015 → snappy, nodes return quickly after mouse push
+      var SPRING_K   = 0.005;
+
+      // DAMPING: fraction of velocity kept each frame (applied after spring + repulsion).
+      //   0.999 → almost no friction, nodes glide and tangle freely (constellation)
+      //   0.980 → light friction, nodes settle after disturbance  ← current
+      //   0.900 → heavy friction, very little free drift
+      var DAMPING    = 0.980;
+
+      // SPEED_CAP: maximum velocity magnitude a node can reach (px/frame).
+      //   higher → nodes can fling far on mouse push
+      //   lower  → movement stays subtle
+      var SPEED_CAP  = 2.5;
+      // ───────────────────────────────────────────────────────────────────
       var nodes = [];
 
       function resize() {
         canvas.width  = hero.offsetWidth;
         canvas.height = hero.offsetHeight;
+        // On resize, update home positions proportionally
+        nodes.forEach(function (n) {
+          n.ox = n.fx * canvas.width;
+          n.oy = n.fy * canvas.height;
+        });
       }
 
       function rand(min, max) { return min + Math.random() * (max - min); }
 
       function init() {
-        resize();
+        canvas.width  = hero.offsetWidth;
+        canvas.height = hero.offsetHeight;
         nodes = [];
         for (var i = 0; i < NODE_COUNT; i++) {
+          var fx = Math.random();
+          var fy = Math.random();
           nodes.push({
-            x:  rand(0, canvas.width),
-            y:  rand(0, canvas.height),
-            vx: rand(-0.25, 0.25),
-            vy: rand(-0.25, 0.25),
+            fx: fx, fy: fy,                    // fractional home position
+            ox: fx * canvas.width,             // home x (absolute)
+            oy: fy * canvas.height,            // home y (absolute)
+            x:  fx * canvas.width,
+            y:  fy * canvas.height,
+            vx: rand(-0.3, 0.3),
+            vy: rand(-0.3, 0.3),
             r:  rand(2, 4)
           });
         }
@@ -383,7 +433,7 @@
             var dy = nodes[j].y - nodes[i].y;
             var d  = Math.sqrt(dx * dx + dy * dy);
             if (d < LINK_DIST) {
-              var alpha = (1 - d / LINK_DIST) * 0.35;
+              var alpha = (1 - d / LINK_DIST) * 0.3;
               ctx.beginPath();
               ctx.moveTo(nodes[i].x, nodes[i].y);
               ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -398,7 +448,7 @@
         for (var i = 0; i < nodes.length; i++) {
           ctx.beginPath();
           ctx.arc(nodes[i].x, nodes[i].y, nodes[i].r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(165, 180, 252, 0.55)';
+          ctx.fillStyle = 'rgba(165, 180, 252, 0.6)';
           ctx.fill();
         }
       }
@@ -406,6 +456,10 @@
       function update() {
         for (var i = 0; i < nodes.length; i++) {
           var n = nodes[i];
+
+          // Spring: pull back toward home position
+          n.vx += (n.ox - n.x) * SPRING_K;
+          n.vy += (n.oy - n.y) * SPRING_K;
 
           // Mouse repulsion
           var mx = n.x - mouse.x;
@@ -417,22 +471,23 @@
             n.vy += (my / md) * force;
           }
 
+          // Damping
+          n.vx *= DAMPING;
+          n.vy *= DAMPING;
+
           // Speed cap
           var speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
-          if (speed > 1.5) { n.vx *= 1.5 / speed; n.vy *= 1.5 / speed; }
+          if (speed > SPEED_CAP) { n.vx *= SPEED_CAP / speed; n.vy *= SPEED_CAP / speed; }
 
           n.x += n.vx;
           n.y += n.vy;
 
-          // Bounce off edges
-          if (n.x < 0)             { n.x = 0;             n.vx *= -1; }
-          if (n.x > canvas.width)  { n.x = canvas.width;  n.vx *= -1; }
-          if (n.y < 0)             { n.y = 0;             n.vy *= -1; }
-          if (n.y > canvas.height) { n.y = canvas.height; n.vy *= -1; }
-
-          // Gentle damping
-          n.vx *= 0.995;
-          n.vy *= 0.995;
+          // Soft boundary: spring back from edges instead of hard bounce
+          var pad = 10;
+          if (n.x < pad)                   n.vx += (pad - n.x) * 0.05;
+          if (n.x > canvas.width  - pad)   n.vx += (canvas.width  - pad - n.x) * 0.05;
+          if (n.y < pad)                   n.vy += (pad - n.y) * 0.05;
+          if (n.y > canvas.height - pad)   n.vy += (canvas.height - pad - n.y) * 0.05;
         }
       }
 
@@ -444,7 +499,7 @@
         mouse.y = e.clientY - rect.top;
       });
       hero.addEventListener('mouseleave', function () { mouse.x = -9999; mouse.y = -9999; });
-      window.addEventListener('resize', function () { resize(); });
+      window.addEventListener('resize', resize);
 
       init();
       loop();
