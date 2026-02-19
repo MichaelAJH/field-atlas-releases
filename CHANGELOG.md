@@ -3,6 +3,15 @@
 All notable changes to Field Atlas are documented here. Versions correspond to tags in both the development and release repositories.
 
 ---
+## [v0.7.0] - 2026-02-19
+
+- Fix version control to use dev branch and SemVer-like versioning
+- First stable beta release
+
+
+## [v0.6.0] - 2026-02-19
+
+- Continuous Integration (CI) for relases page
 
 ## [v0.5.2] — 2026-02-19
 

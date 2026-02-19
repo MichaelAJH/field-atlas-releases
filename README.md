@@ -23,6 +23,7 @@ See all versions on the [Releases page](https://github.com/MichaelAJH/field-atla
 1. Download the `.dmg` file.
 2. Open it and drag **Field Atlas** to your Applications folder.
 3. On first launch, macOS may block the app (unsigned). Right-click the app and select **Open**, then confirm.
+4. If the app still fails to run, run `xattr -cr /Applications/Field\ Atlas.app` in terminal.
 
 ### Windows
 
