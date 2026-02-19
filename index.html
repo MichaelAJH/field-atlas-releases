@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Field Atlas — Citation Graph Explorer for Researchers</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -34,14 +36,28 @@
 
     /* ---- Header ---- */
     header {
+      position: relative;
       padding: 80px 0 48px;
       text-align: center;
+      overflow: hidden;
+    }
+    #graph-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    header > *:not(#graph-canvas) {
+      position: relative;
+      z-index: 1;
     }
     header h1 {
       font-size: 2.8rem;
       font-weight: 700;
       letter-spacing: -0.03em;
       margin-bottom: 12px;
+      color: #a5b4fc;
     }
     header .tagline {
       font-size: 1.15rem;
@@ -189,7 +205,8 @@
   <div class="container">
 
     <!-- Header -->
-    <header>
+    <header id="hero">
+      <canvas id="graph-canvas"></canvas>
       <h1>Field Atlas</h1>
       <p class="tagline">
         An interactive citation graph explorer that helps researchers navigate unfamiliar academic fields.
@@ -323,6 +340,118 @@
   </div>
 
   <script>
+    // ── Animated graph background ──
+    (function () {
+      var canvas = document.getElementById('graph-canvas');
+      var hero   = document.getElementById('hero');
+      var ctx    = canvas.getContext('2d');
+      var mouse  = { x: -9999, y: -9999 };
+      var NODE_COUNT = 52;
+      var LINK_DIST  = 130;
+      var REPEL_DIST = 90;
+      var REPEL_STR  = 0.4;
+      var nodes = [];
+
+      function resize() {
+        canvas.width  = hero.offsetWidth;
+        canvas.height = hero.offsetHeight;
+      }
+
+      function rand(min, max) { return min + Math.random() * (max - min); }
+
+      function init() {
+        resize();
+        nodes = [];
+        for (var i = 0; i < NODE_COUNT; i++) {
+          nodes.push({
+            x:  rand(0, canvas.width),
+            y:  rand(0, canvas.height),
+            vx: rand(-0.25, 0.25),
+            vy: rand(-0.25, 0.25),
+            r:  rand(2, 4)
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Edges
+        for (var i = 0; i < nodes.length; i++) {
+          for (var j = i + 1; j < nodes.length; j++) {
+            var dx = nodes[j].x - nodes[i].x;
+            var dy = nodes[j].y - nodes[i].y;
+            var d  = Math.sqrt(dx * dx + dy * dy);
+            if (d < LINK_DIST) {
+              var alpha = (1 - d / LINK_DIST) * 0.35;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.strokeStyle = 'rgba(129, 140, 248, ' + alpha + ')';
+              ctx.lineWidth   = 1;
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Nodes
+        for (var i = 0; i < nodes.length; i++) {
+          ctx.beginPath();
+          ctx.arc(nodes[i].x, nodes[i].y, nodes[i].r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(165, 180, 252, 0.55)';
+          ctx.fill();
+        }
+      }
+
+      function update() {
+        for (var i = 0; i < nodes.length; i++) {
+          var n = nodes[i];
+
+          // Mouse repulsion
+          var mx = n.x - mouse.x;
+          var my = n.y - mouse.y;
+          var md = Math.sqrt(mx * mx + my * my);
+          if (md < REPEL_DIST && md > 0) {
+            var force = (1 - md / REPEL_DIST) * REPEL_STR;
+            n.vx += (mx / md) * force;
+            n.vy += (my / md) * force;
+          }
+
+          // Speed cap
+          var speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
+          if (speed > 1.5) { n.vx *= 1.5 / speed; n.vy *= 1.5 / speed; }
+
+          n.x += n.vx;
+          n.y += n.vy;
+
+          // Bounce off edges
+          if (n.x < 0)             { n.x = 0;             n.vx *= -1; }
+          if (n.x > canvas.width)  { n.x = canvas.width;  n.vx *= -1; }
+          if (n.y < 0)             { n.y = 0;             n.vy *= -1; }
+          if (n.y > canvas.height) { n.y = canvas.height; n.vy *= -1; }
+
+          // Gentle damping
+          n.vx *= 0.995;
+          n.vy *= 0.995;
+        }
+      }
+
+      function loop() { update(); draw(); requestAnimationFrame(loop); }
+
+      hero.addEventListener('mousemove', function (e) {
+        var rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+      });
+      hero.addEventListener('mouseleave', function () { mouse.x = -9999; mouse.y = -9999; });
+      window.addEventListener('resize', function () { resize(); });
+
+      init();
+      loop();
+    })();
+  </script>
+
+  <script>
     (function () {
       var REPO = 'MichaelAJH/field-atlas-releases';
       var API  = 'https://api.github.com/repos/' + REPO + '/releases/latest';
@@ -351,7 +480,7 @@
           // Update version note
           var note = document.getElementById('version-note');
           if (note && release.tag_name) {
-            note.innerHTML = 'Latest: <strong>' + release.tag_name + '</strong> &middot; Free &amp; open source &middot; '
+            note.innerHTML = 'Latest: <strong>' + release.tag_name + '</strong> (beta) &middot; Free &middot; '
               + '<a href="https://github.com/' + REPO + '/releases">All releases</a>';
           }
 
